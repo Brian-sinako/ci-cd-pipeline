@@ -1,82 +1,55 @@
-name: CI/CD Pipeline
+public class StudentRepository
+{
+    private string connectionString = @"Data Source=DESKTOP-HEEKBHE\SQLEXPRESS;Initial Catalog=schooldb;Integrated Security=True";
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    public void AddStudent(Student student)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            con.Open();
+            SqlCommand cmd = new SqlCommand("INSERT INTO studentab VALUES (@StudentId, @StudentName, @Dob, @Gender, @Phone, @Email)", con);
+            cmd.Parameters.AddWithValue("@StudentId", student.StudentId);
+            cmd.Parameters.AddWithValue("@StudentName", student.StudentName);
+            cmd.Parameters.AddWithValue("@Dob", student.Dob);
+            cmd.Parameters.AddWithValue("@Gender", student.Gender);
+            cmd.Parameters.AddWithValue("@Phone", student.Phone);
+            cmd.Parameters.AddWithValue("@Email", student.Email);
+            cmd.ExecuteNonQuery();
+        }
+    }
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'  # Updated to the latest Node.js version
+    // Other methods (UpdateStudent, DeleteStudent, GetAllStudents, etc.)
+}
 
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Build the application
-        run: npm run build
+public class StudentService
+{
+    private StudentRepository _studentRepository = new StudentRepository();
 
-      - name: Archive production artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: production-artifact
-          path: build/
+    public void SaveStudent(Student student)
+    {
+        // Add any validation or business rules here
+        _studentRepository.AddStudent(student);
+    }
 
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    // Other methods (UpdateStudent, DeleteStudent, etc.)
+}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'  # Updated to the latest Node.js version
 
-      - name: Install dependencies
-        run: npm install
+private void btnSave_Click(object sender, EventArgs e)
+{
+    var student = new Student
+    {
+        StudentId = int.Parse(textBox1.Text),
+        StudentName = textBox2.Text,
+        Dob = dateTimePicker1.Value,
+        Gender = textBox3.Text,
+        Phone = textBox4.Text,
+        Email = textBox5.Text
+    };
 
-      - name: Run tests
-        run: npm test
+    var studentService = new StudentService();
+    studentService.SaveStudent(student);
+    MessageBox.Show("Record Saved Successfully", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
+}
 
-      - name: Code quality checks
-        run: npm run lint
 
-      - name: Code coverage
-        run: npm run coverage
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: production-artifact
-      
-      - name: Deploy to Staging Environment 
-        env:
-          DEPLOYMENT_SERVER: ${{ secrets.DEPLOYMENT_SERVER }}
-          DEPLOYMENT_KEY: ${{ secrets.DEPLOYMENT_KEY }}
-        run: |
-          echo "Deploying to Staging..."
-          
-          # Use SSH to deploy the artifact to the server
-          scp -i $DEPLOYMENT_KEY -r build/* user@$DEPLOYMENT_SERVER:/path/to/deployment/directory
-          
-          # Optionally restart your application (if applicable)
-          ssh -i $DEPLOYMENT_KEY user@$DEPLOYMENT_SERVER 'pm2 restart my-app'  # Example using PM2
