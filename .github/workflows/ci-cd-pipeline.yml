@@ -22,10 +22,10 @@ jobs:
         dotnet-version: '7.0.x'  # Specify your .NET version
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore CarDealership/CarDealership.csproj  # Update this path
 
     - name: Build the project
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build CarDealership/CarDealership.csproj --configuration Release --no-restore  # Update this path
 
     - name: Publish the project
-      run: dotnet publish --configuration Release --output ./artifacts
+      run: dotnet publish CarDealership/CarDealership.csproj --configuration Release --output ./artifacts  # Update this path
