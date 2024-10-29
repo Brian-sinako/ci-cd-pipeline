@@ -44,12 +44,12 @@ jobs:
         run: |
           dotnet publish ./-c Release -o ./publish
           rm -rf ".ci-cd-pipeline"
-          cp -r ./publish/* "./ pipeline-web-app"
+          cp -r ./publish/*./
       
       - name: Configure Git
         run: |
           git config --local user.email "sinakobrian3@gmail"
-          git config --local user.name "Sinako"
+          git config --local user.name "Brian-sinako"
       
       - name: Commit and push to staging
         env:
