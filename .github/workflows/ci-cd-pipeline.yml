@@ -42,13 +42,13 @@ jobs:
       
       - name: Copy build artifacts
         run: |
-          dotnet publish ./-c Release -o ./publish
-          rm -rf ".ci-cd-pipeline"
-          cp -r ./publish/*./
+          dotnet publish -c Release -o ./publish
+          rm -rf "/ci-cd-pipeline"
+          cp -r ./publish/*
       
       - name: Configure Git
         run: |
-          git config --local user.email "sinakobrian3@gmail"
+          git config --local user.email "sinakobrian3@gmail.com"
           git config --local user.name "Brian-sinako"
       
       - name: Commit and push to staging
