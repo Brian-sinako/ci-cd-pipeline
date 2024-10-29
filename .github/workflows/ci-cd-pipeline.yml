@@ -1,55 +1,31 @@
-public class StudentRepository
-{
-    private string connectionString = @"Data Source=DESKTOP-HEEKBHE\SQLEXPRESS;Initial Catalog=schooldb;Integrated Security=True";
+name: CI/CD Pipeline
 
-    public void AddStudent(Student student)
-    {
-        using (SqlConnection con = new SqlConnection(connectionString))
-        {
-            con.Open();
-            SqlCommand cmd = new SqlCommand("INSERT INTO studentab VALUES (@StudentId, @StudentName, @Dob, @Gender, @Phone, @Email)", con);
-            cmd.Parameters.AddWithValue("@StudentId", student.StudentId);
-            cmd.Parameters.AddWithValue("@StudentName", student.StudentName);
-            cmd.Parameters.AddWithValue("@Dob", student.Dob);
-            cmd.Parameters.AddWithValue("@Gender", student.Gender);
-            cmd.Parameters.AddWithValue("@Phone", student.Phone);
-            cmd.Parameters.AddWithValue("@Email", student.Email);
-            cmd.ExecuteNonQuery();
-        }
-    }
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-    // Other methods (UpdateStudent, DeleteStudent, GetAllStudents, etc.)
-}
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-public class StudentService
-{
-    private StudentRepository _studentRepository = new StudentRepository();
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    public void SaveStudent(Student student)
-    {
-        // Add any validation or business rules here
-        _studentRepository.AddStudent(student);
-    }
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '7.0.x'  # Specify your .NET version
 
-    // Other methods (UpdateStudent, DeleteStudent, etc.)
-}
+    - name: Restore dependencies
+      run: dotnet restore
 
+    - name: Build the project
+      run: dotnet build --configuration Release --no-restore
 
-private void btnSave_Click(object sender, EventArgs e)
-{
-    var student = new Student
-    {
-        StudentId = int.Parse(textBox1.Text),
-        StudentName = textBox2.Text,
-        Dob = dateTimePicker1.Value,
-        Gender = textBox3.Text,
-        Phone = textBox4.Text,
-        Email = textBox5.Text
-    };
-
-    var studentService = new StudentService();
-    studentService.SaveStudent(student);
-    MessageBox.Show("Record Saved Successfully", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
-}
-
-
+    - name: Publish the project
+      run: dotnet publish --configuration Release --output ./artifacts
